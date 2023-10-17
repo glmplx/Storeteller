@@ -1,6 +1,9 @@
 package com.example.storeteller;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -32,6 +35,20 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
+
+        // Trouver le bouton par son ID
+        Button button = findViewById(R.id.button);
+
+        // Ajouter un OnClickListener au bouton
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Afficher un toast "Hello World"
+                Toast.makeText(MainActivity.this, "Hello World", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
+
 
 }
