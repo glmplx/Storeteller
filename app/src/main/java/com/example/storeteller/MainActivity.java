@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        int test_bart_commit;
         super.onCreate(savedInstanceState);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -43,12 +44,10 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Afficher un toast "Hello World"
+                //G Afficher un toast "Hello World"
                 Toast.makeText(MainActivity.this, "Hello World", Toast.LENGTH_SHORT).show();
             }
         });
     }
-
-
 
 }
