@@ -1,6 +1,8 @@
 package com.example.storeteller;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -14,6 +16,8 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.storeteller.databinding.ActivityMainBinding;
+
+import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -38,4 +42,14 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(binding.navView, navController);
     }
 
+    File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() +"/"+ filename);
+    Intent target = new Intent(Intent.ACTION_VIEW);
+    target.setDataAndType(Uri.fromFile(file),"application/pdf");
+    target.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+
+    Intent intent = Intent.createChooser(target, "Open File");
+try {
+        startActivity(intent);
+    } catch (ActivityNotFoundException e) {
+    }
 }
