@@ -1,5 +1,7 @@
-package com.example.storeteller.ui.dashboard;
+package com.example.storeteller.ui.library;
 
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,23 +15,22 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.storeteller.MainActivity;
 import com.example.storeteller.R;
-import com.example.storeteller.databinding.FragmentDashboardBinding;
+import com.example.storeteller.databinding.FragmentLibraryBinding;
 
-public class DashboardFragment extends Fragment {
+public class LibraryFragment extends Fragment {
 
-    private FragmentDashboardBinding binding;
+    private FragmentLibraryBinding binding;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        DashboardViewModel dashboardViewModel =
-                new ViewModelProvider(this).get(DashboardViewModel.class);
+        LibraryViewModel dashboardViewModel =
+                new ViewModelProvider(this).get(LibraryViewModel.class);
 
-        binding = FragmentDashboardBinding.inflate(inflater, container, false);
+        binding = FragmentLibraryBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        final TextView textView = binding.textDashboard;
+        final TextView textView = binding.textLibrary;
         dashboardViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
         return root;
 
@@ -37,6 +38,7 @@ public class DashboardFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+
         // Trouver le bouton par son ID
         Button button = getView().findViewById(R.id.button);
 
@@ -44,8 +46,14 @@ public class DashboardFragment extends Fragment {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //G Afficher un toast "Hello World"
-                    Toast.makeText(getActivity(), "Hello World", Toast.LENGTH_SHORT).show();
+                Intent target = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                Intent intent = Intent.createChooser(target, "Open File");
+                try {
+                    startActivity(intent);
+                    Toast.makeText(getActivity(), "bite", Toast.LENGTH_SHORT).show();
+                } catch (ActivityNotFoundException e) {
+                    // Instruct the user to install a PDF reader here, or something
+                }
             }
         });
     }
