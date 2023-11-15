@@ -15,11 +15,22 @@
         android:id="@+id/navigation_library"
         android:name="com.example.storeteller.ui.library.LibraryFragment"
         android:label="@string/title_library"
-        tools:layout="@layout/fragment_library" />
+        tools:layout="@layout/fragment_library" >
+        <action
+            android:id="@+id/action_navigation_library_to_navigation_play"
+            app:destination="@id/navigation_play" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_play"
         android:name="com.example.storeteller.ui.play.PlayFragment"
         android:label="@string/title_play"
-        tools:layout="@layout/fragment_play" />
+        tools:layout="@layout/fragment_play" >
+        <action
+            android:id="@+id/action_navigation_play_to_navigation_library"
+            app:destination="@id/navigation_library"
+            app:popUpTo="@id/navigation_library"
+            app:popUpToInclusive="true" />
+    </fragment>
+
 </navigation>

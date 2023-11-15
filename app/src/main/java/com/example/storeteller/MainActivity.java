@@ -1,38 +1,35 @@
 package com.example.storeteller;
 
 import android.Manifest;
-import android.content.DialogInterface;
-import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.storeteller.databinding.ActivityMainBinding;
+import com.example.storeteller.ui.library.LibraryFragment;
+import com.example.storeteller.ui.play.PlayFragment;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements LibraryFragment.OnFileSelectedListener {
 
     private ActivityMainBinding binding;
     private static final int PERMISSION_REQUEST_CODE = 1;
     private static final String TAG = "PERMISSION_TAG";
     private TextView resultTv;
+    private final AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
+            R.id.navigation_settings, R.id.navigation_library, R.id.navigation_play)
+            .build();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,14 +39,12 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         
-        permissionLauncher.launch(Manifest.permission.READ_MEDIA_AUDIO);
+        permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
-        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_settings, R.id.navigation_library, R.id.navigation_play)
-                .build();
+
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
@@ -74,8 +69,30 @@ public class MainActivity extends AppCompatActivity {
             }
     );
 
+    @Override
+    public boolean onSupportNavigateUp() {
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
+        return NavigationUI.navigateUp(navController, appBarConfiguration)
+                || super.onSupportNavigateUp();
+    }
+
+    @Override
+    public void onFileSelected(Uri selectedFileUri) {
+        // Pass the selected file URI to the FragmentPlay
+        PlayFragment fragmentPlay = (PlayFragment) getSupportFragmentManager().findFragmentById(R.id.navigation_play);
+
+        if (fragmentPlay != null) {
+            fragmentPlay.setSelectedFile(selectedFileUri);
+        }
+    }
+
+    @Override
+    public void onFileReplaced(Uri selectedFileUri) {
+
+    }
+
+
     private void permissionGranted(){
         resultTv.setText("Permission Granted !");
     }
 }
-

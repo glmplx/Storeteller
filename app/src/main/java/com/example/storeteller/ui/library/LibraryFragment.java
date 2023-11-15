@@ -1,66 +1,177 @@
 package com.example.storeteller.ui.library;
 
-import android.content.ActivityNotFoundException;
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.TextView;
+import android.widget.ListView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.example.storeteller.R;
-import com.example.storeteller.databinding.FragmentLibraryBinding;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class LibraryFragment extends Fragment {
 
-    private FragmentLibraryBinding binding;
+    private static final int PICK_PDF_REQUEST = 1;  // Request code for file picker intent
+    private ListView fileList;
+    private Button selectFileButton;
+    private Button viewFileButon;
+    private ActivityResultLauncher<Intent> filePickerLauncher;
+    private Uri selectedFileUri;
+    private OnFileSelectedListener fileSelectedListener;
+    private ArrayAdapter<String> adapter;
+    private HashMap<Uri, String> recentSelectedFile = new HashMap<>();
+    private String selectedFileName;
 
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
-        LibraryViewModel dashboardViewModel =
-                new ViewModelProvider(this).get(LibraryViewModel.class);
 
-        binding = FragmentLibraryBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_library, container, false);
 
-        final TextView textView = binding.textLibrary;
-        dashboardViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
-        return root;
+        fileList = view.findViewById(R.id.fileList);
+        selectFileButton = view.findViewById(R.id.selectFileButton);
+        viewFileButon = view.findViewById(R.id.viewFileButon);
 
+        adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, new ArrayList<>(recentSelectedFile.values()));
+        fileList.setAdapter(adapter);
+
+        // Set onClickListener for the select file button
+        selectFileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Open file picker intent
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("application/pdf");  // Restrict to PDF files
+                startActivityForResult(intent, PICK_PDF_REQUEST);
+            }
+        });
+
+
+        return view;
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        // Trouver le bouton par son ID
-        Button button = getView().findViewById(R.id.button);
+        // Move the code from onCreateView to onViewCreated
+        filePickerLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() == Activity.RESULT_OK) {
+                Intent data = result.getData();
+                if (data != null) {
+                    selectedFileUri = data.getData();
+                }
+            }
+        });
 
-        // Ajouter un OnClickListener au bouton
-        button.setOnClickListener(new View.OnClickListener() {
+        fileList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Get the selected file URI from the adapter
+                selectedFileUri = (Uri) recentSelectedFile.keySet().toArray()[position];
+                selectedFileName = getFileNameFromUri(selectedFileUri);
+
+                // Notify the listener (MainActivity) about the selected file
+                if (fileSelectedListener != null) {
+                    fileSelectedListener.onFileSelected(selectedFileUri);
+                }
+            }
+        });
+
+        viewFileButon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent target = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-                Intent intent = Intent.createChooser(target, "Open File");
-                try {
-                    startActivity(intent);
-                    Toast.makeText(getActivity(), "bite", Toast.LENGTH_SHORT).show();
-                } catch (ActivityNotFoundException e) {
-                    // Instruct the user to install a PDF reader here, or something
+                if (selectedFileName != null) {
+                    if(selectedFileUri != null){
+                        selectedFileName = getFileNameFromUri(selectedFileUri);
+                    }
+                    // Afficher un toast avec le nom du fichier
+                    Toast.makeText(getActivity(), "Nom du fichier sélectionné : " + selectedFileName, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getActivity(), "Aucun fichier sélectionné.", Toast.LENGTH_SHORT).show();
                 }
             }
         });
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_PDF_REQUEST && resultCode == Activity.RESULT_OK) {
+            if (data != null) {
+                // Get selected PDF file URI
+                Uri newSelectedFileUri = data.getData();
+
+                // Replace the selected file URI in the adapter and update the UI
+                if (newSelectedFileUri != null) {
+                    selectedFileUri = newSelectedFileUri;
+                    selectedFileName = getFileNameFromUri(selectedFileUri);
+
+                    // Add the selected file URI to the recentSelectedFile list
+                    recentSelectedFile.put(selectedFileUri,selectedFileName);
+                    adapter.clear();
+                    adapter.addAll(recentSelectedFile.values());
+                    adapter.notifyDataSetChanged();
+
+                    // Notify the listener (MainActivity) about the replaced file
+                    if (fileSelectedListener != null) {
+                        fileSelectedListener.onFileReplaced(selectedFileUri);
+                    }
+                }
+            }
+        }
     }
+
+    private String getFileNameFromUri(Uri uri) {
+        String fileName = null;
+        if (uri.getScheme().equals("content")) {
+            try (Cursor cursor = getActivity().getContentResolver().query(uri, null, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                    fileName = cursor.getString(nameIndex);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        if (fileName == null) {
+            fileName = uri.getLastPathSegment();
+        }
+        return fileName;
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        try {
+            fileSelectedListener = (OnFileSelectedListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString() + " must implement OnFileSelectedListener");
+        }
+    }
+
+    public interface OnFileSelectedListener {
+        void onFileSelected(Uri selectedFileUri);
+        void onFileReplaced(Uri selectedFileUri);
+    }
+
+
 }
