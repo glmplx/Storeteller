@@ -20,8 +20,10 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.storeteller.R;
+import com.example.storeteller.SharedViewModel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,6 +40,7 @@ public class LibraryFragment extends Fragment {
     private ArrayAdapter<String> adapter;
     private HashMap<Uri, String> recentSelectedFile = new HashMap<>();
     private String selectedFileName;
+    private SharedViewModel sharedViewModel;
 
 
     @Override
@@ -50,6 +53,8 @@ public class LibraryFragment extends Fragment {
 
         adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, new ArrayList<>(recentSelectedFile.values()));
         fileList.setAdapter(adapter);
+
+        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
         // Set onClickListener for the select file button
         selectFileButton.setOnClickListener(new View.OnClickListener() {
@@ -136,6 +141,8 @@ public class LibraryFragment extends Fragment {
                         fileSelectedListener.onFileReplaced(selectedFileUri);
                     }
                 }
+                // Set the selected file URI in the SharedViewModel
+                sharedViewModel.setSelectedFileUri(selectedFileUri);
             }
         }
     }
@@ -163,6 +170,7 @@ public class LibraryFragment extends Fragment {
         super.onAttach(context);
         try {
             fileSelectedListener = (OnFileSelectedListener) context;
+            sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString() + " must implement OnFileSelectedListener");
         }
@@ -172,6 +180,5 @@ public class LibraryFragment extends Fragment {
         void onFileSelected(Uri selectedFileUri);
         void onFileReplaced(Uri selectedFileUri);
     }
-
 
 }

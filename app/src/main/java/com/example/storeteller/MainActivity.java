@@ -18,7 +18,6 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.storeteller.databinding.ActivityMainBinding;
 import com.example.storeteller.ui.library.LibraryFragment;
-import com.example.storeteller.ui.play.PlayFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity implements LibraryFragment.OnFileSelectedListener {
@@ -38,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements LibraryFragment.O
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
         
         permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
 
@@ -78,12 +78,6 @@ public class MainActivity extends AppCompatActivity implements LibraryFragment.O
 
     @Override
     public void onFileSelected(Uri selectedFileUri) {
-        // Pass the selected file URI to the FragmentPlay
-        PlayFragment fragmentPlay = (PlayFragment) getSupportFragmentManager().findFragmentById(R.id.navigation_play);
-
-        if (fragmentPlay != null) {
-            fragmentPlay.setSelectedFile(selectedFileUri);
-        }
     }
 
     @Override
@@ -91,8 +85,4 @@ public class MainActivity extends AppCompatActivity implements LibraryFragment.O
 
     }
 
-
-    private void permissionGranted(){
-        resultTv.setText("Permission Granted !");
-    }
 }
