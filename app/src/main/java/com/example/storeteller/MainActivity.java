@@ -1,7 +1,6 @@
 package com.example.storeteller;
 
 import android.Manifest;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
@@ -17,10 +16,9 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.storeteller.databinding.ActivityMainBinding;
-import com.example.storeteller.ui.library.LibraryFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class MainActivity extends AppCompatActivity implements LibraryFragment.OnFileSelectedListener {
+public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private static final int PERMISSION_REQUEST_CODE = 1;
@@ -74,15 +72,6 @@ public class MainActivity extends AppCompatActivity implements LibraryFragment.O
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         return NavigationUI.navigateUp(navController, appBarConfiguration)
                 || super.onSupportNavigateUp();
-    }
-
-    @Override
-    public void onFileSelected(Uri selectedFileUri) {
-    }
-
-    @Override
-    public void onFileReplaced(Uri selectedFileUri) {
-
     }
 
 }

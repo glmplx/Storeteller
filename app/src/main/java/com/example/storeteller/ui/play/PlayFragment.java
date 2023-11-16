@@ -36,7 +36,4 @@ public class PlayFragment extends Fragment{
         });
         return view;
     }
-
-    public void setSelectedFile(Uri selectedFileUri) {
-    }
 }

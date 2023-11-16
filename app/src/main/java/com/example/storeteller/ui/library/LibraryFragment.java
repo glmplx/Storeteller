@@ -36,7 +36,6 @@ public class LibraryFragment extends Fragment {
     private Button viewFileButon;
     private ActivityResultLauncher<Intent> filePickerLauncher;
     private Uri selectedFileUri;
-    private OnFileSelectedListener fileSelectedListener;
     private ArrayAdapter<String> adapter;
     private HashMap<Uri, String> recentSelectedFile = new HashMap<>();
     private String selectedFileName;
@@ -94,9 +93,6 @@ public class LibraryFragment extends Fragment {
                 selectedFileName = getFileNameFromUri(selectedFileUri);
                 sharedViewModel.setSelectedFileUri(selectedFileUri);
                 // Notify the listener (MainActivity) about the selected file
-                if (fileSelectedListener != null) {
-                    fileSelectedListener.onFileSelected(selectedFileUri);
-                }
             }
         });
 
@@ -135,11 +131,6 @@ public class LibraryFragment extends Fragment {
                     adapter.clear();
                     adapter.addAll(recentSelectedFile.values());
                     adapter.notifyDataSetChanged();
-
-                    // Notify the listener (MainActivity) about the replaced file
-                    if (fileSelectedListener != null) {
-                        fileSelectedListener.onFileReplaced(selectedFileUri);
-                    }
                 }
                 // Set the selected file URI in the SharedViewModel
                 sharedViewModel.setSelectedFileUri(selectedFileUri);
@@ -168,17 +159,8 @@ public class LibraryFragment extends Fragment {
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        try {
-            fileSelectedListener = (OnFileSelectedListener) context;
-            sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
-        } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement OnFileSelectedListener");
-        }
+        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
     }
 
-    public interface OnFileSelectedListener {
-        void onFileSelected(Uri selectedFileUri);
-        void onFileReplaced(Uri selectedFileUri);
-    }
 
 }
