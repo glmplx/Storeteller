@@ -2,7 +2,9 @@ package com.example.storeteller.ui.play;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -19,9 +21,10 @@ public class PlayFragment extends Fragment{
     private SharedViewModel sharedViewModel;
 
     @Override
-    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             ViewGroup container, Bundle savedInstanceState) {
 
+        View view = inflater.inflate(R.layout.fragment_play, container, false);
         pdfView = view.findViewById(R.id.PDFView);
 
         sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
@@ -31,6 +34,7 @@ public class PlayFragment extends Fragment{
                 pdfView.fromUri(selectedFileUri).load();
             }
         });
+        return view;
     }
 
     public void setSelectedFile(Uri selectedFileUri) {
