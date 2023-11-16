@@ -92,7 +92,7 @@ public class LibraryFragment extends Fragment {
                 // Get the selected file URI from the adapter
                 selectedFileUri = (Uri) recentSelectedFile.keySet().toArray()[position];
                 selectedFileName = getFileNameFromUri(selectedFileUri);
-
+                sharedViewModel.setSelectedFileUri(selectedFileUri);
                 // Notify the listener (MainActivity) about the selected file
                 if (fileSelectedListener != null) {
                     fileSelectedListener.onFileSelected(selectedFileUri);
