@@ -1,7 +1,6 @@
 package com.example.storeteller.ui.library;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -154,12 +153,6 @@ public class LibraryFragment extends Fragment {
             fileName = uri.getLastPathSegment();
         }
         return fileName;
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
     }
 
 

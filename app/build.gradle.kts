@@ -33,6 +33,8 @@ android {
 
 dependencies {
     implementation("com.github.barteksc:android-pdf-viewer:2.8.2")
+    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
+    implementation("com.itextpdf:itextg:5.5.10")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.10.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")

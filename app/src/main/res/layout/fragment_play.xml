@@ -8,13 +8,21 @@
 
     <com.github.barteksc.pdfviewer.PDFView
         android:id="@+id/PDFView"
-        android:layout_width="344dp"
-        android:layout_height="505dp"
+        android:layout_width="321dp"
+        android:layout_height="297dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.492"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.119" />
+        app:layout_constraintVertical_bias="0.036" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="320dp"
+        android:layout_height="294dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/PDFView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
