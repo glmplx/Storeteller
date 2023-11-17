@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
         
         permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+        permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each

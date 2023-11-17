@@ -1,13 +1,12 @@
 package com.example.storeteller.ui.play;
 
-import android.content.ContentUris;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.speech.tts.TextToSpeech;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.storeteller.FilePathHelper;
 import com.example.storeteller.R;
 import com.example.storeteller.SharedViewModel;
 import com.github.barteksc.pdfviewer.PDFView;
@@ -59,20 +59,33 @@ public class PlayFragment extends Fragment {
         sharedViewModel.getSelectedFileUri().observe(getViewLifecycleOwner(), selectedFileUri -> {
             if (selectedFileUri != null) {
                 pdfView.fromUri(selectedFileUri).load();
-                final String id = DocumentsContract.getDocumentId(selectedFileUri);
-                final Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
-
-                String[] projection = { MediaStore.Images.Media.DATA };
-                Cursor cursor = getContext().getContentResolver().query(contentUri, projection, null, null, null);
-                int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-                cursor.moveToFirst();
-                String pdfPath = cursor.getString(column_index);
                 playButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+
+                        FilePathHelper filePathHelper = new FilePathHelper();
+                        String uriString = "";
+
+                        if (filePathHelper.getPathnew(selectedFileUri, getContext()) != null) {
+                            uriString = filePathHelper.getPathnew(selectedFileUri, getContext()).toLowerCase();
+                        } else {
+                            uriString = filePathHelper.getFilePathFromURI(selectedFileUri, getContext()).toLowerCase();
+                        }
+
+                        // Replace the cache directory with the desired path
+                        //uriString = uriString.replace("/android/data/com.example.storeteller/cache/", "/Download/");
+
+                        //String fileName = getFileNameFromUri(selectedFileUri);
+                        //String[] uriParts = uriString.split("/");
+                        //uriParts[uriParts.length - 1] = fileName;
+                        //uriString = TextUtils.join("/", uriParts);
+
+                        Log.d("path",uriString);
+
                         String stringParser = "";
+
                         try {
-                            PdfReader pdfReader = new PdfReader(pdfPath);
+                            PdfReader pdfReader = new PdfReader(uriString);
                             stringParser = PdfTextExtractor.getTextFromPage(pdfReader, 1).trim();
                             pdfReader.close();
                             textView.setText(stringParser);
@@ -87,5 +100,23 @@ public class PlayFragment extends Fragment {
             }
         });
         return view;
+    }
+
+    private String getFileNameFromUri(Uri uri) {
+        String fileName = null;
+        if (uri.getScheme().equals("content")) {
+            try (Cursor cursor = getActivity().getContentResolver().query(uri, null, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                    fileName = cursor.getString(nameIndex);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        if (fileName == null) {
+            fileName = uri.getLastPathSegment();
+        }
+        return fileName;
     }
 }
