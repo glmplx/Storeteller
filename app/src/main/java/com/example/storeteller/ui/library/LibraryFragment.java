@@ -29,7 +29,7 @@ import java.util.HashMap;
 
 public class LibraryFragment extends Fragment {
 
-    private static final int PICK_PDF_REQUEST = 1;  // Request code for file picker intent
+    private static final int PICK_PDF_REQUEST = 1;
     private ListView fileList;
     private Button selectFileButton;
     private Button viewFileButon;
