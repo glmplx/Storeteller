@@ -1,13 +1,15 @@
 package com.example.storeteller.ui.play;
 
-import android.media.AudioManager;
+import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.provider.OpenableColumns;
 import android.speech.tts.TextToSpeech;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,9 +35,8 @@ public class PlayFragment extends Fragment {
             .getAbsolutePath() + "/Documents";
     private PDFView pdfView;
     private TextView textView;
-    private Button playButton;
+    private Button playButton,rewindButton, forwardButton;
     private TextToSpeech tts;
-    private Uri audioFileUri;
     private Uri selectedFileUri;
     private MediaPlayer mediaPlayer;
     private String pdfText;
@@ -52,16 +53,20 @@ public class PlayFragment extends Fragment {
         pdfView = view.findViewById(R.id.PDFView);
 
         playButton = view.findViewById(R.id.playButton);
-        playButton.setText("Play");
+        playButton.setText(R.string.play);
+
+        rewindButton = view.findViewById(R.id.rewindButton);
+        forwardButton = view.findViewById(R.id.forwardButton);
 
         textView = view.findViewById(R.id.textView);
         textView.setMovementMethod(new ScrollingMovementMethod());
 
         playbackSeekBar = view.findViewById(R.id.playbackSeekBar);
 
+        handler = new Handler();
+
         mediaPlayer = new MediaPlayer();
 
-        handler = new Handler();
 
         SharedViewModel sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
         this.selectedFileUri = sharedViewModel.getSelectedFileUri();
@@ -75,12 +80,35 @@ public class PlayFragment extends Fragment {
                     HashMap<String, String> myHashRender = new HashMap<String, String>();
                     myHashRender.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, pdfText);
 
-                    String destFileName = envPath + "/" + "tts_file.wav";
+                    String destFileName = envPath + "/" + getFileNameFromUri(selectedFileUri).replace(".pdf", ".wav");
 
-                    int sr = tts.synthesizeToFile(pdfText, myHashRender, destFileName);
                     File fileTTS = new File(destFileName);
 
-                    audioFileUri = Uri.fromFile(fileTTS);
+                    if (!fileTTS.exists()) {
+                        int sr = tts.synthesizeToFile(pdfText, myHashRender, destFileName);
+                        Log.d("view0", "synthesize returns = " + sr);
+
+                        if (fileTTS.exists()) {
+                            Log.d("view1", "successfully created fileTTS");
+                        } else {
+                            Log.d("view2", "failed while creating fileTTS");
+                        }
+                    } else {
+                        Log.d("view3", "File already exists at the destination");
+                    }
+
+                    Uri audioFileUri = Uri.fromFile(fileTTS);
+                    mediaPlayer = MediaPlayer.create(getActivity(), audioFileUri);
+
+                    mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                        @Override
+                        public void onCompletion(MediaPlayer mp) {
+                            // Called when playback is completed
+                            playButton.setText(R.string.play);
+                            playbackSeekBar.setProgress(0);
+                            handler.removeCallbacks(runnable); // Stop updating the seekbar
+                        }
+                    });
                 }
             }
         });
@@ -94,8 +122,48 @@ public class PlayFragment extends Fragment {
             playButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    play();
-                    // TODO bouton play et pause qui change
+                    playbackSeekBar.setMax(mediaPlayer.getDuration());
+                    if(!mediaPlayer.isPlaying()){
+                        mediaPlayer.start();
+                        updateSeekBar();
+                        playButton.setText(R.string.pause);
+                    } else {
+                        mediaPlayer.pause();
+                        updateSeekBar();
+                        playButton.setText(R.string.play);
+                    }
+
+                }
+            });
+
+            rewindButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int currentPosition = mediaPlayer.getCurrentPosition();
+                    int newPosition = currentPosition - 5000; // 5 seconds in milliseconds
+
+                    if (newPosition < 0) {
+                        newPosition = 0;
+                    }
+
+                    mediaPlayer.seekTo(newPosition);
+                    playbackSeekBar.setProgress(newPosition);
+                }
+            });
+
+            forwardButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int currentPosition = mediaPlayer.getCurrentPosition();
+                    int newPosition = currentPosition + 5000; // 5 seconds in milliseconds
+                    int duration = mediaPlayer.getDuration();
+
+                    if (newPosition > duration) {
+                        newPosition = duration;
+                    }
+
+                    mediaPlayer.seekTo(newPosition);
+                    playbackSeekBar.setProgress(newPosition);
                 }
             });
 
@@ -110,7 +178,6 @@ public class PlayFragment extends Fragment {
 
                 @Override
                 public void onStartTrackingTouch(SeekBar seekBar) {
-                    // TODO recupérer la position et l'adapté à l'audio
                 }
 
                 @Override
@@ -118,34 +185,8 @@ public class PlayFragment extends Fragment {
 
                 }
             });
-
-
-
         }
-
         return view;
-    }
-
-    public void play(){
-        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        mediaPlayer.reset();
-
-        try {
-            mediaPlayer.setDataSource(getActivity(),audioFileUri);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        mediaPlayer.prepareAsync();
-        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                playbackSeekBar.setMax(mediaPlayer.getDuration());
-                mediaPlayer.start();
-                updateSeekBar();
-            }
-        });
-
     }
 
     public void updateSeekBar(){
@@ -159,6 +200,24 @@ public class PlayFragment extends Fragment {
             }
         };
         handler.postDelayed(runnable,10);
+    }
+
+    private String getFileNameFromUri(Uri uri) {
+        String fileName = null;
+        if (uri.getScheme().equals("content")) {
+            try (Cursor cursor = getActivity().getContentResolver().query(uri, null, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                    fileName = cursor.getString(nameIndex);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        if (fileName == null) {
+            fileName = uri.getLastPathSegment();
+        }
+        return fileName;
     }
 
 }
