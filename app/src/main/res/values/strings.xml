@@ -7,4 +7,7 @@
     <string name="back">Back</string>
     <string name="view_file_name">View File Name</string>
     <string name="textview">TextView</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+
 </resources>

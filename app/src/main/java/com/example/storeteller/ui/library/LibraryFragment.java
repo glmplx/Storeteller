@@ -69,8 +69,6 @@ public class LibraryFragment extends Fragment {
                 startActivityForResult(intent, PICK_PDF_REQUEST);
             }
         });
-
-
         return view;
     }
 

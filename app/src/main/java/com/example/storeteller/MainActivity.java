@@ -3,7 +3,6 @@ package com.example.storeteller;
 import android.Manifest;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultCallback;
@@ -21,9 +20,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
-    private static final int PERMISSION_REQUEST_CODE = 1;
     private static final String TAG = "PERMISSION_TAG";
-    private TextView resultTv;
     private final AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
             R.id.navigation_settings, R.id.navigation_library, R.id.navigation_play)
             .build();
@@ -35,10 +32,8 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
         
         permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
-        permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
@@ -47,8 +42,6 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
-
-
     }
 
     private ActivityResultLauncher<String> permissionLauncher = registerForActivityResult(
