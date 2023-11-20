@@ -29,12 +29,24 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
+    packagingOptions {
+        exclude("META-INF/DEPENDENCIES")
+        exclude("META-INF/LICENSE")
+        exclude("META-INF/LICENSE.txt")
+        exclude("META-INF/license.txt")
+        exclude("META-INF/NOTICE")
+        exclude("META-INF/NOTICE.txt")
+        exclude("META-INF/notice.txt")
+        exclude("META-INF/ASL2.0")
+        exclude("META-INF/*.kotlin_module")
+    }
 }
 
 dependencies {
     implementation("in.gauriinfotech:commons:1.0.8")
+    implementation("org.apache.pdfbox:pdfbox:3.0.0")
     implementation("com.github.barteksc:android-pdf-viewer:2.8.2")
-    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
     implementation("com.itextpdf:itextg:5.5.10")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.10.0")

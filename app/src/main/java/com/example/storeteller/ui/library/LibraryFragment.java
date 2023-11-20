@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,12 +25,22 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.storeteller.R;
 import com.example.storeteller.SharedViewModel;
 
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class LibraryFragment extends Fragment {
 
     private static final int PICK_PDF_REQUEST = 1;
+    private static final String PRIMARY = "primary";
+    private static final String LOCAL_STORAGE = "/storage/self/primary/";
+    private static final String EXT_STORAGE = "/storage/7764-A034/";
+    private static final String COLON = ":";
     private ListView fileList;
     private Button selectFileButton;
     private Button viewFileButon;
@@ -91,6 +102,8 @@ public class LibraryFragment extends Fragment {
                 selectedFileUri = (Uri) recentSelectedFile.keySet().toArray()[position];
                 selectedFileName = getFileNameFromUri(selectedFileUri);
                 sharedViewModel.setSelectedFileUri(selectedFileUri);
+                String text = readPdfFile(selectedFileUri);
+                sharedViewModel.setText(text);
                 // Notify the listener (MainActivity) about the selected file
             }
         });
@@ -133,6 +146,8 @@ public class LibraryFragment extends Fragment {
                 }
                 // Set the selected file URI in the SharedViewModel
                 sharedViewModel.setSelectedFileUri(selectedFileUri);
+                String text = readPdfFile(selectedFileUri);
+                sharedViewModel.setText(text);
             }
         }
     }
@@ -153,6 +168,31 @@ public class LibraryFragment extends Fragment {
             fileName = uri.getLastPathSegment();
         }
         return fileName;
+    }
+
+    public String readPdfFile(Uri uri) {
+        String fullPath;
+        String stringParser = "";
+        //convert from uri to full path
+        if(uri.getPath().contains(PRIMARY)) {
+            fullPath = LOCAL_STORAGE + uri.getPath().split(COLON)[1];
+        }
+        else {
+            fullPath = EXT_STORAGE + uri.getPath().split(COLON)[1];
+        }
+        Log.v("URI", uri.getPath()+" "+fullPath);
+        try {
+            File file = new File(uri.getPath());
+            PDDocument document = Loader.loadPDF(file);
+            PDFTextStripper pdfStripper = new PDFTextStripper();
+            pdfStripper.setStartPage(1);
+            pdfStripper.setEndPage(document.getNumberOfPages());
+            stringParser = pdfStripper.getText(document);
+        } catch (IOException e) {
+            stringParser = "Problem with converter";
+            e.printStackTrace();
+        }
+        return stringParser;
     }
 
 

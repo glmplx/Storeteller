@@ -2,18 +2,25 @@ package com.example.storeteller;
 
 import android.net.Uri;
 
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 public class SharedViewModel extends ViewModel {
-    private final MutableLiveData<Uri> selectedFileUri = new MutableLiveData<Uri>();
+    private Uri selectedFileUri;
+    private String textExtract;
 
     public void setSelectedFileUri(Uri uri) {
-        selectedFileUri.setValue(uri);
+        selectedFileUri = uri;
     }
 
-    public LiveData<Uri> getSelectedFileUri() {
+    public void setText(String text) {
+        textExtract = text;
+    }
+
+    public Uri getSelectedFileUri() {
         return selectedFileUri;
+    }
+
+    public String getText() {
+        return textExtract;
     }
 }
