@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,10 +36,6 @@ import java.util.HashMap;
 public class LibraryFragment extends Fragment {
 
     private static final int PICK_PDF_REQUEST = 1;
-    private static final String PRIMARY = "primary";
-    private static final String LOCAL_STORAGE = "/storage/self/primary/";
-    private static final String EXT_STORAGE = "/storage/7764-A034/";
-    private static final String COLON = ":";
     private ListView fileList;
     private Button selectFileButton;
     private Button viewFileButon;
@@ -171,16 +166,7 @@ public class LibraryFragment extends Fragment {
     }
 
     public String readPdfFile(Uri uri) {
-        String fullPath;
         String stringParser = "";
-        //convert from uri to full path
-        if(uri.getPath().contains(PRIMARY)) {
-            fullPath = LOCAL_STORAGE + uri.getPath().split(COLON)[1];
-        }
-        else {
-            fullPath = EXT_STORAGE + uri.getPath().split(COLON)[1];
-        }
-        Log.v("URI", uri.getPath()+" "+fullPath);
         try {
             File file = new File(uri.getPath());
             PDDocument document = Loader.loadPDF(file);
