@@ -23,13 +23,11 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.storeteller.R;
 import com.example.storeteller.SharedViewModel;
+import com.itextpdf.text.pdf.PdfReader;
+import com.itextpdf.text.pdf.parser.PdfTextExtractor;
 
-import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
-
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -166,20 +164,19 @@ public class LibraryFragment extends Fragment {
     }
 
     public String readPdfFile(Uri uri) {
-        String stringParser = "";
+        String text = "";
         try {
-            File file = new File(uri.getPath());
-            PDDocument document = Loader.loadPDF(file);
-            PDFTextStripper pdfStripper = new PDFTextStripper();
-            pdfStripper.setStartPage(1);
-            pdfStripper.setEndPage(document.getNumberOfPages());
-            stringParser = pdfStripper.getText(document);
+            InputStream fis = getContext().getContentResolver().openInputStream(uri);
+            PdfReader reader = new PdfReader(fis);
+            int n = reader.getNumberOfPages();
+            for (int i = 0; i <n ; i++) {
+                text = text + PdfTextExtractor.getTextFromPage(reader, i+1).trim()+"\n"; //Extracting the content from the different pages
+            }
+            reader.close();
         } catch (IOException e) {
-            stringParser = "Problem with converter";
-            e.printStackTrace();
+            text = "Problem with converter";
         }
-        return stringParser;
+        return text;
     }
-
 
 }
