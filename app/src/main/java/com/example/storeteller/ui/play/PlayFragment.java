@@ -158,7 +158,7 @@ public class PlayFragment extends Fragment {
                 updateSeekBar();
             }
         };
-        handler.postDelayed(runnable,1000);
+        handler.postDelayed(runnable,10);
     }
 
 }
