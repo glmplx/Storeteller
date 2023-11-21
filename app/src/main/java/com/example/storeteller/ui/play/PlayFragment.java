@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -26,13 +27,12 @@ import com.example.storeteller.SharedViewModel;
 import com.github.barteksc.pdfviewer.PDFView;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.Locale;
 
 public class PlayFragment extends Fragment {
 
-    private String envPath = Environment.getExternalStorageDirectory()
-            .getAbsolutePath() + "/Documents";
+    private String audioFileName = "";
+    private String fileId = "";
     private PDFView pdfView;
     private TextView textView;
     private Button playButton,rewindButton, forwardButton;
@@ -72,52 +72,44 @@ public class PlayFragment extends Fragment {
         this.selectedFileUri = sharedViewModel.getSelectedFileUri();
         this.pdfText = sharedViewModel.getText();
 
-        tts = new TextToSpeech(getContext(), new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                if (status == TextToSpeech.SUCCESS) {
-                    tts.setLanguage(Locale.US);
-                    HashMap<String, String> myHashRender = new HashMap<String, String>();
-                    myHashRender.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, pdfText);
-
-                    String destFileName = envPath + "/" + getFileNameFromUri(selectedFileUri).replace(".pdf", ".wav");
-
-                    File fileTTS = new File(destFileName);
-
-                    if (!fileTTS.exists()) {
-                        int sr = tts.synthesizeToFile(pdfText, myHashRender, destFileName);
-                        Log.d("view0", "synthesize returns = " + sr);
-
-                        if (fileTTS.exists()) {
-                            Log.d("view1", "successfully created fileTTS");
-                        } else {
-                            Log.d("view2", "failed while creating fileTTS");
-                        }
-                    } else {
-                        Log.d("view3", "File already exists at the destination");
-                    }
-
-                    Uri audioFileUri = Uri.fromFile(fileTTS);
-                    mediaPlayer = MediaPlayer.create(getActivity(), audioFileUri);
-
-                    mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                        @Override
-                        public void onCompletion(MediaPlayer mp) {
-                            // Called when playback is completed
-                            playButton.setText(R.string.play);
-                            playbackSeekBar.setProgress(0);
-                            handler.removeCallbacks(runnable); // Stop updating the seekbar
-                        }
-                    });
-                }
-            }
-        });
-
-
-
         if (selectedFileUri != null) {
             pdfView.fromUri(selectedFileUri).load();
             textView.setText(pdfText);
+            fileId = getFileNameFromUri(selectedFileUri).replace(".pdf", "");
+
+            tts = new TextToSpeech(getContext(), new TextToSpeech.OnInitListener() {
+                @Override
+                public void onInit(int status) {
+                    if (status == TextToSpeech.SUCCESS) {
+                        tts.setLanguage(Locale.US);
+                        createFile(fileId);
+                        saveToAudioFile(pdfText,fileId);
+                        File file = new File(audioFileName);
+                        Uri audioFileUri = Uri.fromFile(file);
+                        if(audioFileUri != null) {
+                            mediaPlayer = MediaPlayer.create(getActivity(), audioFileUri);
+
+                            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                                @Override
+                                public void onCompletion(MediaPlayer mp) {
+                                    // Called when playback is completed
+                                    playButton.setText(R.string.play);
+                                    playbackSeekBar.setProgress(0);
+                                    handler.removeCallbacks(runnable); // Stop updating the seekbar
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+        }
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        if (mediaPlayer != null) {
 
             playButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -186,7 +178,6 @@ public class PlayFragment extends Fragment {
                 }
             });
         }
-        return view;
     }
 
     public void updateSeekBar(){
@@ -218,6 +209,28 @@ public class PlayFragment extends Fragment {
             fileName = uri.getLastPathSegment();
         }
         return fileName;
+    }
+
+    private  void createFile(String fileId){
+        File sddir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "Storeteller");
+        if(!sddir.exists()){
+            boolean isDirectoryCreated = sddir.mkdirs();
+            if(!isDirectoryCreated){
+                Toast.makeText(getActivity(),"Can't create directory so save audio",Toast.LENGTH_SHORT).show();
+            }
+        }
+        sddir.mkdirs();
+        audioFileName = sddir.getAbsolutePath() + "/" + fileId + System.currentTimeMillis() + ".wav";
+        Log.d("view",audioFileName);
+    }
+
+    private void saveToAudioFile(String pdfText, String fileId){
+        tts.synthesizeToFile(pdfText, null, new File(audioFileName), fileId);
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
     }
 
 }
