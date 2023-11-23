@@ -33,7 +33,7 @@ import java.util.Objects;
 public class PlayFragment extends Fragment {
 
     private Button playButton,rewindButton, forwardButton;
-    private ImageView playLogo;
+    private ImageView loadLogo;
     private TextToSpeech tts;
     private Uri selectedFileUri;
     private Uri audioFileUri;
@@ -52,7 +52,8 @@ public class PlayFragment extends Fragment {
 
         PDFView pdfView = view.findViewById(R.id.PDFView);
 
-        playLogo = view.findViewById(R.id.playLogo);
+        loadLogo = view.findViewById(R.id.loadLogo);
+        loadLogo.setVisibility(View.GONE);
 
         playButton = view.findViewById(R.id.playButton);
         playButton.setText(R.string.play);
@@ -99,8 +100,8 @@ public class PlayFragment extends Fragment {
                         File file = new File(filePath);
 
                         disableInterface();
-                        playLogo.setVisibility(View.VISIBLE);
-                        playLogo.animate().rotationBy(360).start();
+                        loadLogo.setVisibility(View.VISIBLE);
+                        loadLogo.animate().rotationBy(360).start();
 
                         tts.synthesizeToFile(pdfText, bundleTTS, file,TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID);
 
@@ -236,8 +237,8 @@ public class PlayFragment extends Fragment {
         requireActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                playLogo.setRotation(0);
-                playLogo.setVisibility(View.GONE);
+                loadLogo.setRotation(0);
+                loadLogo.setVisibility(View.GONE);
                 enableInterface();
             }
         });

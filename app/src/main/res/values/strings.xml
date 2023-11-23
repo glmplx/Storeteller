@@ -10,9 +10,11 @@
     <string name="play">Play</string>
     <string name="pause">Pause</string>
     <string name="emptyPlay">"Please load a file from the Library fragment"</string>
-    <string-array name="countries">
-        <item>US</item>
-        <item>FRANCE</item>
-    </string-array>
+    <string name="recentSelectedFiles">"Recent Selected Files"</string>
+    <string name="speed">"Speed"</string>
+    <string name="pitch">"Pitch"</string>
+    <string name="language">"Select the language you want"</string>
+
+
 
 </resources>
