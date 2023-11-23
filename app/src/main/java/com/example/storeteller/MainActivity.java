@@ -19,7 +19,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ActivityMainBinding binding;
     private static final String TAG = "PERMISSION_TAG";
     private final AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
             R.id.navigation_settings, R.id.navigation_library, R.id.navigation_play)
@@ -30,33 +29,29 @@ public class MainActivity extends AppCompatActivity {
         int test_bart_commit;
         super.onCreate(savedInstanceState);
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        com.example.storeteller.databinding.ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         
         permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
 
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
     }
 
-    private ActivityResultLauncher<String> permissionLauncher = registerForActivityResult(
+    private final ActivityResultLauncher<String> permissionLauncher = registerForActivityResult(
             new ActivityResultContracts.RequestPermission(),
             new ActivityResultCallback<Boolean>() {
                 @Override
                 public void onActivityResult(Boolean isGranted) {
                     Log.d(TAG, "onActivityResult: isGranted: "+isGranted);
-                    // Vérifier si la permission de lecture du stockage externe est accordée
-                    if (isGranted) {
-                        // La permission est accordée, ne rien demander
-                    } else {
-                        Log.d(TAG, "onActivityResult: Permission dennied");
-                        Toast.makeText(MainActivity.this, "Permission dennied", Toast.LENGTH_SHORT).show();
+                    if (!isGranted) {
+                        Log.d(TAG, "onActivityResult: Permission denied");
+                        Toast.makeText(MainActivity.this, "Permission denied", Toast.LENGTH_SHORT).show();
                     }
+
                 }
             }
     );

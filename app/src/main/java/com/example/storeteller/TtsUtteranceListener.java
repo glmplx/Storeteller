@@ -8,8 +8,8 @@ import com.example.storeteller.ui.play.PlayFragment;
 
 public class TtsUtteranceListener extends UtteranceProgressListener {
 
-    private PlayFragment.OnSynthesisCompleteListener listener;
-    private Uri audioFileUri;
+    private final PlayFragment.OnSynthesisCompleteListener listener;
+    private final Uri audioFileUri;
 
     public TtsUtteranceListener(PlayFragment.OnSynthesisCompleteListener listener, Uri audioFileUri) {
         this.listener = listener;
@@ -23,7 +23,6 @@ public class TtsUtteranceListener extends UtteranceProgressListener {
 
     @Override
     public void onDone(String utteranceId) {
-        // Appeler l'interface pour informer le fragment que la synthèse est terminée
         if (listener != null) {
             listener.onSynthesisComplete(audioFileUri);
         }

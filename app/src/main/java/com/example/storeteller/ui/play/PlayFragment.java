@@ -28,6 +28,7 @@ import com.github.barteksc.pdfviewer.PDFView;
 
 import java.io.File;
 import java.util.Locale;
+import java.util.Objects;
 
 public class PlayFragment extends Fragment {
 
@@ -87,10 +88,13 @@ public class PlayFragment extends Fragment {
                         tts.setPitch(sharedViewModel.getPitch());
                         tts.setSpeechRate(sharedViewModel.getSpeed());
 
-                        Bundle bundletts= new Bundle();
-                        bundletts.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "id");
+                        Bundle bundleTTS= new Bundle();
+                        bundleTTS.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "id");
 
                         File sddir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "Storeteller");
+                        if(!sddir.exists()){
+                            sddir.mkdir();
+                        }
                         String filePath = sddir.getAbsolutePath() + "/" + getFileNameFromUri(selectedFileUri).replace(".pdf", "") + ".wav";
                         File file = new File(filePath);
 
@@ -98,7 +102,7 @@ public class PlayFragment extends Fragment {
                         playLogo.setVisibility(View.VISIBLE);
                         playLogo.animate().rotationBy(360).start();
 
-                        tts.synthesizeToFile(pdfText, bundletts, file,TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID);
+                        tts.synthesizeToFile(pdfText, bundleTTS, file,TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID);
 
                         audioFileUri = Uri.fromFile(file);
 
@@ -208,8 +212,8 @@ public class PlayFragment extends Fragment {
 
     private String getFileNameFromUri(Uri uri) {
         String fileName = null;
-        if (uri.getScheme().equals("content")) {
-            try (Cursor cursor = getActivity().getContentResolver().query(uri, null, null, null, null)) {
+        if (Objects.equals(uri.getScheme(), "content")) {
+            try (Cursor cursor = requireActivity().getContentResolver().query(uri, null, null, null, null)) {
                 if (cursor != null && cursor.moveToFirst()) {
                     int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
                     fileName = cursor.getString(nameIndex);
@@ -229,7 +233,7 @@ public class PlayFragment extends Fragment {
     }
 
     private void handleSynthesisCompletion(Uri audioFileUri) {
-        getActivity().runOnUiThread(new Runnable() {
+        requireActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 playLogo.setRotation(0);
@@ -261,7 +265,7 @@ public class PlayFragment extends Fragment {
     }
 
     public static Locale fromString(String locale) {
-        String parts[] = locale.split("_", -1);
+        String[] parts = locale.split("_", -1);
         if (parts.length == 1) return new Locale(parts[0]);
         else if (parts.length == 2
                 || (parts.length == 3 && parts[2].startsWith("#")))

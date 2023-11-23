@@ -8,7 +8,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.SeekBar;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -20,29 +19,26 @@ import com.example.storeteller.SharedViewModel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.TreeMap;
 
 public class SettingsFragment extends Fragment implements AdapterView.OnItemSelectedListener {
 
-    private HashMap<String, Locale> countryLocaleMap = new HashMap<>();
-    private Spinner spinner;
-    private SeekBar pitchSeekBar;
-    private SeekBar speedSeekBar;
+    private final HashMap<String, Locale> countryLocaleMap = new HashMap<>();
+    private final TreeMap<String, Locale> sortedCountryLocaleMap = new TreeMap<>();
     private SharedViewModel sharedViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        SettingsViewModel settingsViewModel =
-                new ViewModelProvider(this).get(SettingsViewModel.class);
 
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
-        spinner = view.findViewById(R.id.spinner);
+        Spinner spinner = view.findViewById(R.id.spinner);
 
-        pitchSeekBar = view.findViewById(R.id.seek_bar_pitch);
+        SeekBar pitchSeekBar = view.findViewById(R.id.seek_bar_pitch);
 
-        speedSeekBar = view.findViewById(R.id.seek_bar_speed);
+        SeekBar speedSeekBar = view.findViewById(R.id.seek_bar_speed);
 
-        countryLocaleMap.put("US", Locale.US);
+        countryLocaleMap.put("ENGLISH", Locale.US);
         countryLocaleMap.put("FRANCE", Locale.FRANCE);
         countryLocaleMap.put("GERMAN", Locale.GERMAN);
         countryLocaleMap.put("ITALY", Locale.ITALY);
@@ -74,18 +70,25 @@ public class SettingsFragment extends Fragment implements AdapterView.OnItemSele
         countryLocaleMap.put("FINNISH", new Locale("fi", "FI"));
         countryLocaleMap.put("GREEK", new Locale("el", "GR"));
 
+        sortedCountryLocaleMap.putAll(countryLocaleMap);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item, new ArrayList<>(countryLocaleMap.keySet()));
+        float defaultPitch = 1.0f;
+        float defaultSpeed = 1.0f;
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(), android.R.layout.simple_spinner_item, new ArrayList<>(sortedCountryLocaleMap.keySet()));
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(this);
         sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
+        pitchSeekBar.setProgress((int) (defaultPitch * 100));
+        speedSeekBar.setProgress((int) (defaultSpeed * 100));
+
+
         pitchSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                // Mettre à jour le pitch dans le SharedViewModel lorsque la SeekBar change
-                float pitch = (float) progress / 100.0f;
+                float pitch = convertProgressToValue(progress);
                 sharedViewModel.setPitch(pitch);
             }
 
@@ -96,13 +99,13 @@ public class SettingsFragment extends Fragment implements AdapterView.OnItemSele
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
             }
-            
+
         });
 
         speedSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                float speed = (float) progress / 100.0f;
+                float speed = convertProgressToValue(progress);
                 sharedViewModel.setSpeed(speed);
             }
 
@@ -127,15 +130,16 @@ public class SettingsFragment extends Fragment implements AdapterView.OnItemSele
         Locale selectedLocale = countryLocaleMap.get(selectedCountry);
 
         if (selectedLocale != null) {
-            // Do something with the selected Locale if needed
             sharedViewModel.setSelectedLocale(selectedLocale);
-            Toast.makeText(parent.getContext(), selectedCountry, Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
+    }
 
+    private float convertProgressToValue(int progress) {
+        return 0.5f + (float) progress / 200.0f;
     }
 
     @Override
