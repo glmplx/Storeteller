@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -31,16 +32,16 @@ import java.util.Locale;
 public class PlayFragment extends Fragment {
 
     private Button playButton,rewindButton, forwardButton;
+    private ImageView playLogo;
     private TextToSpeech tts;
     private Uri selectedFileUri;
     private Uri audioFileUri;
     private MediaPlayer mediaPlayer;
     private String pdfText;
     private SeekBar playbackSeekBar;
+    private Locale selectedLocale;
     private Runnable runnable;
     private Handler handler;
-    private float PRESENTER_PITCH;
-    private float PRESENTER_RATE;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -49,6 +50,8 @@ public class PlayFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_play, container, false);
 
         PDFView pdfView = view.findViewById(R.id.PDFView);
+
+        playLogo = view.findViewById(R.id.playLogo);
 
         playButton = view.findViewById(R.id.playButton);
         playButton.setText(R.string.play);
@@ -73,14 +76,16 @@ public class PlayFragment extends Fragment {
         if (selectedFileUri != null) {
             pdfView.fromUri(selectedFileUri).load();
             textView.setText(pdfText);
+            selectedLocale = sharedViewModel.getSelectedLocale();
+            if(selectedLocale==null) selectedLocale = fromString(pdfText);
 
             tts = new TextToSpeech(getContext(), new TextToSpeech.OnInitListener() {
                 @Override
                 public void onInit(int status) {
                     if (status == TextToSpeech.SUCCESS) {
-                        tts.setLanguage(Locale.US);
-                        tts.setPitch(PRESENTER_PITCH);
-                        tts.setSpeechRate(PRESENTER_RATE);
+                        tts.setLanguage(selectedLocale);
+                        tts.setPitch(sharedViewModel.getPitch());
+                        tts.setSpeechRate(sharedViewModel.getSpeed());
 
                         Bundle bundletts= new Bundle();
                         bundletts.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "id");
@@ -89,6 +94,9 @@ public class PlayFragment extends Fragment {
                         String filePath = sddir.getAbsolutePath() + "/" + getFileNameFromUri(selectedFileUri).replace(".pdf", "") + ".wav";
                         File file = new File(filePath);
 
+                        disableInterface();
+                        playLogo.setVisibility(View.VISIBLE);
+                        playLogo.animate().rotationBy(360).start();
 
                         tts.synthesizeToFile(pdfText, bundletts, file,TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID);
 
@@ -221,6 +229,14 @@ public class PlayFragment extends Fragment {
     }
 
     private void handleSynthesisCompletion(Uri audioFileUri) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                playLogo.setRotation(0);
+                playLogo.setVisibility(View.GONE);
+                enableInterface();
+            }
+        });
         mediaPlayer = MediaPlayer.create(getActivity(), audioFileUri);
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
@@ -232,6 +248,26 @@ public class PlayFragment extends Fragment {
         });
     }
 
+    public void enableInterface(){
+        playButton.setEnabled(true);
+        forwardButton.setEnabled(true);
+        rewindButton.setEnabled(true);
+    }
+
+    public void disableInterface(){
+        playButton.setEnabled(false);
+        forwardButton.setEnabled(false);
+        rewindButton.setEnabled(false);
+    }
+
+    public static Locale fromString(String locale) {
+        String parts[] = locale.split("_", -1);
+        if (parts.length == 1) return new Locale(parts[0]);
+        else if (parts.length == 2
+                || (parts.length == 3 && parts[2].startsWith("#")))
+            return new Locale(parts[0], parts[1]);
+        else return new Locale(parts[0], parts[1], parts[2]);
+    }
 
     @Override
     public void onDestroy(){
