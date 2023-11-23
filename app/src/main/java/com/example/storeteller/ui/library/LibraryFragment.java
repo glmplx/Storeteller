@@ -8,7 +8,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,35 +52,37 @@ public class LibraryFragment extends Fragment {
     private SharedPreferences.Editor myPrefsEdit;
     private Map<String, ?> allEntries;
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_library, container, false);
 
+        // Initialize UI components
         fileList = view.findViewById(R.id.fileList);
         Button selectFileButton = view.findViewById(R.id.selectFileButton);
         viewFileButton = view.findViewById(R.id.viewFileButon);
 
+        // Initialize SharedPreferences for storing selected files
         myPrefs = requireActivity().getPreferences(Context.MODE_PRIVATE);
         myPrefsEdit = myPrefs.edit();
 
-
+        // Retrieve previously selected files from SharedPreferences
         allEntries = myPrefs.getAll();
-
         for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
             String fileName = entry.getKey();
             String uriString = entry.getValue().toString();
-            Log.d("fileName",fileName);
-            Log.d("uriString",uriString);
             Uri fileUri = Uri.parse(uriString);
             recentSelectedFile.put(fileUri, fileName);
         }
 
+        // Set up ListView with the recently selected files
         adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, new ArrayList<>(recentSelectedFile.values()));
         fileList.setAdapter(adapter);
 
+        // Get the SharedViewModel for communication between fragments
         sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
+        // Set up onClickListener for the "Select File" button
         selectFileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -92,6 +93,7 @@ public class LibraryFragment extends Fragment {
                 startActivityForResult(intent, PICK_PDF_REQUEST);
             }
         });
+
         return view;
     }
 
@@ -99,6 +101,7 @@ public class LibraryFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Set up the ActivityResultLauncher for handling file picker result
         ActivityResultLauncher<Intent> filePickerLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (result.getResultCode() == Activity.RESULT_OK) {
                 Intent data = result.getData();
@@ -108,22 +111,24 @@ public class LibraryFragment extends Fragment {
             }
         });
 
+        // Set up item click listener for the file list
         fileList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Handle item click to load and display selected file
                 selectedFileUri = (Uri) recentSelectedFile.keySet().toArray()[position];
-                Log.d("setLoadedFileSelected","FileName : " + getFileNameFromUri(selectedFileUri) + " Uri : " + selectedFileUri.toString());
                 selectedFileName = getFileNameFromUri(selectedFileUri);
                 sharedViewModel.setSelectedFileUri(selectedFileUri);
                 String text = readPdfFile(selectedFileUri);
-                Log.d("text",text);
                 sharedViewModel.setText(text);
             }
         });
 
+        // Set up onClickListener for the "View File" button
         viewFileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Display the selected file name in a Toast
                 if (selectedFileName != null) {
                     if(selectedFileUri != null){
                         selectedFileName = getFileNameFromUri(selectedFileUri);
@@ -138,36 +143,38 @@ public class LibraryFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Handle the result of the file picker intent
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == PICK_PDF_REQUEST && resultCode == Activity.RESULT_OK) {
             if (data != null) {
-
+                // Get the selected file URI and name
                 Uri newSelectedFileUri = data.getData();
-
                 if (newSelectedFileUri != null) {
                     selectedFileUri = newSelectedFileUri;
                     selectedFileName = getFileNameFromUri(selectedFileUri);
 
+                    // Grant read and write permissions for the selected file URI
                     final int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
                     try {
                         getActivity().getContentResolver().takePersistableUriPermission(selectedFileUri, takeFlags);
                     } catch (SecurityException e) {
                         e.printStackTrace();
                     }
-                    saveFileToCache(selectedFileUri,selectedFileName);
 
-                    Log.d("setSavedFileSelected", "FileName: " + selectedFileName + ", Uri: " + selectedFileName);
+                    // Save the selected file to cache and SharedPreferences
+                    saveFileToCache(selectedFileUri,selectedFileName);
                     myPrefsEdit.putString(selectedFileName, selectedFileUri.toString());
                     myPrefsEdit.apply();
 
+                    // Update the recently selected files list and refresh the adapter
                     recentSelectedFile.put(selectedFileUri,selectedFileName);
-
                     adapter.clear();
                     adapter.addAll(recentSelectedFile.values());
                     adapter.notifyDataSetChanged();
                 }
 
+                // Update SharedViewModel with the selected file URI and its text content
                 sharedViewModel.setSelectedFileUri(selectedFileUri);
                 String text = readPdfFile(selectedFileUri);
                 sharedViewModel.setText(text);
@@ -176,6 +183,7 @@ public class LibraryFragment extends Fragment {
     }
 
     private String getFileNameFromUri(Uri uri) {
+        // Get the file name from the content URI
         String fileName = null;
         if (Objects.equals(uri.getScheme(), "content")) {
             try (Cursor cursor = requireActivity().getContentResolver().query(uri, null, null, null, null)) {
@@ -194,6 +202,7 @@ public class LibraryFragment extends Fragment {
     }
 
     public String readPdfFile(Uri uri) {
+        // Read text content from a PDF file
         String text = "";
         try {
             File cachedFile = new File(requireContext().getCacheDir(), getFileNameFromUri(uri));
@@ -211,6 +220,7 @@ public class LibraryFragment extends Fragment {
     }
 
     private void saveFileToCache(Uri uri, String fileName) {
+        // Save the selected file to the cache directory
         try {
             InputStream inputStream = requireContext().getContentResolver().openInputStream(uri);
             if (inputStream != null) {
@@ -234,12 +244,11 @@ public class LibraryFragment extends Fragment {
 
     @Override
     public void onDestroy() {
+        // Release persistable URI permission when the fragment is destroyed
         super.onDestroy();
-
         if (selectedFileUri != null) {
             getActivity().getContentResolver().releasePersistableUriPermission(selectedFileUri,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         }
     }
-
 }

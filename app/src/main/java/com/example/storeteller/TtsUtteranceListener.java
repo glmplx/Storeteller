@@ -11,26 +11,31 @@ public class TtsUtteranceListener extends UtteranceProgressListener {
     private final PlayFragment.OnSynthesisCompleteListener listener;
     private final Uri audioFileUri;
 
+    // Constructeur qui prend un auditeur et une URI pour le fichier audio généré
     public TtsUtteranceListener(PlayFragment.OnSynthesisCompleteListener listener, Uri audioFileUri) {
         this.listener = listener;
         this.audioFileUri = audioFileUri;
     }
 
+    // Appelé lorsque la synthèse vocale commence
     @Override
     public void onStart(String utteranceId) {
-        Log.d("start", "generating audio files...");
+        Log.d("TtsUtteranceListener", "Synthesis started. Generating audio files...");
     }
 
+    // Appelé lorsque la synthèse vocale est terminée
     @Override
     public void onDone(String utteranceId) {
         if (listener != null) {
+            // Informe l'auditeur que la synthèse vocale est terminée avec l'URI du fichier audio généré
             listener.onSynthesisComplete(audioFileUri);
         }
-        Log.d("done", "generation complete...");
+        Log.d("TtsUtteranceListener", "Synthesis complete. Generation complete...");
     }
 
+    // Appelé en cas d'erreur lors de la synthèse vocale
     @Override
     public void onError(String utteranceId) {
-        Log.d("error", "error.");
+        Log.e("TtsUtteranceListener", "Error during synthesis.");
     }
 }

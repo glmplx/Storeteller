@@ -23,21 +23,82 @@ import java.util.TreeMap;
 
 public class SettingsFragment extends Fragment implements AdapterView.OnItemSelectedListener {
 
+    // Maps for country and locale data
     private final HashMap<String, Locale> countryLocaleMap = new HashMap<>();
     private final TreeMap<String, Locale> sortedCountryLocaleMap = new TreeMap<>();
+
     private SharedViewModel sharedViewModel;
 
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
+        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
+        // Initialize UI components
         Spinner spinner = view.findViewById(R.id.spinner);
-
         SeekBar pitchSeekBar = view.findViewById(R.id.seek_bar_pitch);
-
         SeekBar speedSeekBar = view.findViewById(R.id.seek_bar_speed);
 
+        // Initialize country and locale data
+        initializeCountryLocaleMap();
+
+        // Set default pitch and speed values
+        float defaultPitch = 1.0f;
+        float defaultSpeed = 1.0f;
+
+        // Set up the spinner
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(), android.R.layout.simple_spinner_item, new ArrayList<>(sortedCountryLocaleMap.keySet()));
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(this);
+
+        // Get SharedViewModel for communication between fragments
+        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+
+        // Set initial progress for pitch and speed SeekBars
+        pitchSeekBar.setProgress((int) (defaultPitch * 100));
+        speedSeekBar.setProgress((int) (defaultSpeed * 100));
+
+        // Set listeners for pitch and speed SeekBars
+        pitchSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                float pitch = convertProgressToValue(progress);
+                sharedViewModel.setPitch(pitch);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+
+        speedSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                float speed = convertProgressToValue(progress);
+                sharedViewModel.setSpeed(speed);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+
+        return view;
+    }
+
+    // Method to initialize the country and locale data
+    private void initializeCountryLocaleMap() {
         countryLocaleMap.put("ENGLISH", Locale.US);
         countryLocaleMap.put("FRANCE", Locale.FRANCE);
         countryLocaleMap.put("GERMAN", Locale.GERMAN);
@@ -71,61 +132,11 @@ public class SettingsFragment extends Fragment implements AdapterView.OnItemSele
         countryLocaleMap.put("GREEK", new Locale("el", "GR"));
 
         sortedCountryLocaleMap.putAll(countryLocaleMap);
-
-        float defaultPitch = 1.0f;
-        float defaultSpeed = 1.0f;
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(), android.R.layout.simple_spinner_item, new ArrayList<>(sortedCountryLocaleMap.keySet()));
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
-        spinner.setOnItemSelectedListener(this);
-        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
-
-        pitchSeekBar.setProgress((int) (defaultPitch * 100));
-        speedSeekBar.setProgress((int) (defaultSpeed * 100));
-
-
-        pitchSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                float pitch = convertProgressToValue(progress);
-                sharedViewModel.setPitch(pitch);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
-
-        });
-
-        speedSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                float speed = convertProgressToValue(progress);
-                sharedViewModel.setSpeed(speed);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
-
-        });
-
-        return view;
     }
-
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        // Handle item selection in the spinner
         String selectedCountry = parent.getItemAtPosition(position).toString();
         Locale selectedLocale = countryLocaleMap.get(selectedCountry);
 
@@ -138,6 +149,7 @@ public class SettingsFragment extends Fragment implements AdapterView.OnItemSele
     public void onNothingSelected(AdapterView<?> parent) {
     }
 
+    // Method to convert SeekBar progress to a float value
     private float convertProgressToValue(int progress) {
         return 0.5f + (float) progress / 200.0f;
     }
