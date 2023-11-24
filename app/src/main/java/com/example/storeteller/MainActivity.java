@@ -25,33 +25,33 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Initialisation de l'activité
+        // Activity initialization
         super.onCreate(savedInstanceState);
 
-        // Utilisation du View Binding pour lier le layout de l'activité
+        // Using View Binding to link the activity layout
         ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Lancement de la demande de permission (POST_NOTIFICATIONS)
+        // Launch permission request (POST_NOTIFICATIONS)
         // permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
 
-        // Initialisation de la barre de navigation inférieure
+        // Initializing the bottom navigation bar
         BottomNavigationView navView = findViewById(R.id.nav_view);
 
-        // Configuration du NavController pour la navigation
+        // Configuring the NavController for navigation
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
     }
 
-    // Mise en place du gestionnaire de résultats pour la demande de permission
+    // Setting up the Permission Request Results Manager
     private final ActivityResultLauncher<String> permissionLauncher = registerForActivityResult(
             new ActivityResultContracts.RequestPermission(),
             new ActivityResultCallback<Boolean>() {
                 @Override
                 public void onActivityResult(Boolean isGranted) {
                     Log.d(TAG, "onActivityResult: isGranted: "+isGranted);
-                    // Gestion du résultat de la demande de permission
+                    // Permission request result management
                     if (!isGranted) {
                         Log.d(TAG, "onActivityResult: Permission denied");
                         Toast.makeText(MainActivity.this, "Permission denied", Toast.LENGTH_SHORT).show();
@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
             }
     );
 
-    // Gestion du bouton "Retour" de la barre d'action
+    // Managing the "Back" action bar button
     @Override
     public boolean onSupportNavigateUp() {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);

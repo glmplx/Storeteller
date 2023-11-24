@@ -8,22 +8,22 @@ import java.util.Locale;
 
 public class SharedViewModel extends ViewModel {
 
-    // Uri du fichier PDF sélectionné
+    // Uri of the selected PDF file
     private Uri selectedFileUri;
 
-    // Texte extrait du fichier PDF sélectionné
+    // Text extracted from the selected PDF file
     private String textExtract;
 
-    // Locale sélectionnée pour la synthèse vocale
+    // Local selected for text-to-speech
     private Locale selectedLocale;
 
-    // Hauteur tonale (pitch) pour la synthèse vocale
+    // Pitch for speech synthesis
     private float pitch = 1.0f;
 
-    // Vitesse de la synthèse vocale
+    // Speed for speech synthesis
     private float speed = 1.0f;
 
-    // Méthodes pour définir les différentes propriétés
+    // Methods for defining properties
 
     public void setSelectedFileUri(Uri uri) {
         selectedFileUri = uri;
@@ -45,7 +45,7 @@ public class SharedViewModel extends ViewModel {
         this.speed = speed;
     }
 
-    // Méthodes pour récupérer les valeurs des propriétés
+    // Methods for retrieving property values
 
     public Uri getSelectedFileUri() {
         return selectedFileUri;
