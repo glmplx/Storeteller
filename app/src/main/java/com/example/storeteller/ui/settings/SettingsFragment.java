@@ -26,7 +26,8 @@ public class SettingsFragment extends Fragment implements AdapterView.OnItemSele
     // Maps for country and locale data
     private final HashMap<String, Locale> countryLocaleMap = new HashMap<>();
     private final TreeMap<String, Locale> sortedCountryLocaleMap = new TreeMap<>();
-
+    // Flag to track whether an item has been selected in the spinner
+    private boolean spinnerItemSelected = false;
     private SharedViewModel sharedViewModel;
 
     @Override
@@ -137,11 +138,15 @@ public class SettingsFragment extends Fragment implements AdapterView.OnItemSele
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         // Handle item selection in the spinner
-        String selectedCountry = parent.getItemAtPosition(position).toString();
-        Locale selectedLocale = countryLocaleMap.get(selectedCountry);
+        if (spinnerItemSelected) {
+            String selectedCountry = parent.getItemAtPosition(position).toString();
+            Locale selectedLocale = countryLocaleMap.get(selectedCountry);
 
-        if (selectedLocale != null) {
-            sharedViewModel.setSelectedLocale(selectedLocale);
+            if (selectedLocale != null) {
+                sharedViewModel.setSelectedLocale(selectedLocale);
+            }
+        } else {
+            spinnerItemSelected = true;
         }
     }
 
