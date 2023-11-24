@@ -104,8 +104,6 @@ public class PlayFragment extends Fragment {
 
                         // Disable UI during TTS synthesis
                         disableInterface();
-                        loadLogo.setVisibility(View.VISIBLE);
-                        loadLogo.animate().rotationBy(360).start();
 
                         // Synthesize TTS to file
                         tts.synthesizeToFile(pdfText, new Bundle(), file, TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID);
@@ -249,8 +247,6 @@ public class PlayFragment extends Fragment {
         requireActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                loadLogo.setRotation(0);
-                loadLogo.setVisibility(View.GONE);
                 enableInterface();
             }
         });
@@ -265,8 +261,23 @@ public class PlayFragment extends Fragment {
         });
     }
 
+    private void startRotationAnimation() {
+        loadLogo.setVisibility(View.VISIBLE);
+        loadLogo.animate().rotationBy(360).withEndAction(new Runnable() {
+            @Override
+            public void run() {
+                if (loadLogo.getVisibility() == View.VISIBLE) {
+                    startRotationAnimation();
+                }
+            }
+        }).setDuration(1000).start();
+    }
+
     public void enableInterface() {
         // Enable UI components
+        loadLogo.setRotation(0);
+        loadLogo.setVisibility(View.GONE);
+        loadLogo.clearAnimation();
         playButton.setEnabled(true);
         forwardButton.setEnabled(true);
         rewindButton.setEnabled(true);
@@ -274,6 +285,8 @@ public class PlayFragment extends Fragment {
 
     public void disableInterface() {
         // Disable UI components
+        loadLogo.setVisibility(View.VISIBLE);
+        startRotationAnimation();
         playButton.setEnabled(false);
         forwardButton.setEnabled(false);
         rewindButton.setEnabled(false);
