@@ -40,6 +40,7 @@ public class PlayFragment extends Fragment {
     private Uri audioFileUri;
     private MediaPlayer mediaPlayer;
     private String pdfText;
+    private String pdfName;
     private SeekBar playbackSeekBar;
     private Locale selectedLocale;
     private Runnable runnable;
@@ -64,6 +65,7 @@ public class PlayFragment extends Fragment {
         forwardButton = view.findViewById(R.id.forwardButton);
 
         TextView textView = view.findViewById(R.id.textView);
+        TextView document_title = view.findViewById(R.id.document_title);
         textView.setMovementMethod(new ScrollingMovementMethod());
         textView.setText(R.string.emptyPlay);
 
@@ -77,10 +79,12 @@ public class PlayFragment extends Fragment {
         SharedViewModel sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
         selectedFileUri = sharedViewModel.getSelectedFileUri();
         pdfText = sharedViewModel.getText();
+        pdfName = getFileNameFromUri(selectedFileUri);
 
         if (selectedFileUri != null) {
             pdfView.fromUri(selectedFileUri).load();
             textView.setText(pdfText);
+            document_title.setText(pdfName);
             selectedLocale = sharedViewModel.getSelectedLocale();
             if (selectedLocale == null) selectedLocale = Locale.getDefault();
 

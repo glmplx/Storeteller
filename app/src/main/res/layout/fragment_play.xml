@@ -11,27 +11,16 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="45dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="40dp"
         android:layout_marginEnd="45dp"
         android:layout_marginBottom="21dp"
         app:layout_constraintBottom_toTopOf="@+id/textView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
+    </com.github.barteksc.pdfviewer.PDFView>
 
-    <ImageView
-        android:id="@+id/loadLogo"
-        android:layout_width="104dp"
-        android:layout_height="108dp"
-        android:layout_gravity="center"
-        android:rotation="0"
-        android:src="@drawable/loading_logo"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.499" />
 
     <Button
         android:id="@+id/playButton"
@@ -92,5 +81,35 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.838" />
+
+    <ImageView
+        android:id="@+id/loadLogo"
+        android:layout_width="155dp"
+        android:layout_height="122dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="75dp"
+        android:rotation="0"
+        android:src="@drawable/loading_logo"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/forwardButton"
+        app:layout_constraintStart_toEndOf="@+id/rewindButton"
+        app:layout_constraintTop_toBottomOf="@+id/playbackSeekBar" />
+
+    <TextView
+        android:id="@+id/document_title"
+        android:layout_width="321dp"
+        android:layout_height="67dp"
+        android:layout_marginStart="45dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="45dp"
+        android:layout_marginBottom="8dp"
+        android:textAlignment="center"
+        android:textSize="20sp"
+        app:circularflow_angles="@string/view_file_name"
+        app:layout_constraintBottom_toTopOf="@+id/PDFView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

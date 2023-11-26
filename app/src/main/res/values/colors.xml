@@ -9,5 +9,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="blue">#42B5D6</color>
     <color name="blue2">#1064b7</color>
+    <color name="main_background_blue">#1f1f2e</color>
+    <color name="menu_background_blue">#11111a</color>
 
 </resources>
