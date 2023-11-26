@@ -22,17 +22,16 @@
 
     <ImageView
         android:id="@+id/loadLogo"
-        android:layout_width="256dp"
-        android:layout_height="232dp"
+        android:layout_width="104dp"
+        android:layout_height="108dp"
         android:layout_gravity="center"
         android:rotation="0"
         android:src="@drawable/loading_logo"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.412" />
+        app:layout_constraintVertical_bias="0.499" />
 
     <Button
         android:id="@+id/playButton"
